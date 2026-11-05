@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0c10">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="description" content="A lightweight, beautiful YouTube video player with a saved personal queue.">
+  <title>Tube Lounge — YouTube Player</title>
+  <style>
+    :root { color-scheme: dark; --bg:#0b0c10; --panel:#15161c; --panel-2:#1d1e26; --stroke:rgba(255,255,255,.095); --text:#f5f5f7; --muted:#999ba8; --red:#ff455c; --red2:#d72f47; --green:#6cddbc; --radius:22px; }
+    *{box-sizing:border-box}
+    html{min-height:100%;scroll-behavior:smooth}
+    body{margin:0;min-height:100vh;background:var(--bg);font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--text);overflow-x:hidden}
+    body::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:-1;background:radial-gradient(ellipse at 15% 12%,rgba(230,51,80,.14),transparent 38%),radial-gradient(ellipse at 90% 65%,rgba(89,70,170,.11),transparent 38%);animation:glow 24s ease-in-out infinite alternate;will-change:transform}
+    @keyframes glow{to{transform:translate(2.2%, -1.6%) scale(1.06)}}
+    button,input{font:inherit}
+    button{cursor:pointer}
+    button:focus-visible,input:focus-visible{outline:2px solid #ff6a7d;outline-offset:3px}
+    .shell{width:min(1400px,calc(100% - 52px));margin:auto}
+    .topbar{height:90px;display:flex;align-items:center;justify-content:space-between;gap:18px;border-bottom:1px solid var(--stroke)}
+    .brand{display:flex;align-items:center;gap:13px;text-decoration:none;color:var(--text);font-size:19px;font-weight:780;letter-spacing:-.7px;white-space:nowrap}
+    .brand-mark{display:grid;place-items:center;width:41px;height:41px;border-radius:13px;background:linear-gradient(145deg,#ff6276,#df2445);box-shadow:0 8px 22px #fa27473a}
+    .brand-mark svg{width:21px;height:21px;fill:#fff}
+    .brand em{font-style:normal;color:#ff6578}
+    .top-actions{display:flex;align-items:center;gap:12px}
+    .tag{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--stroke);background:rgba(255,255,255,.035);border-radius:999px;padding:8px 12px;color:#b3b4bd;font-size:12px}
+    .tag i{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 10px #6cddbc50}
+    .outline-link{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:10px 15px;border:1px solid var(--stroke);border-radius:12px;background:#1c1d24;color:#e9e9ed;text-decoration:none;font-size:13px;font-weight:650;transition:background .2s,border-color .2s,transform .2s}
+    .outline-link:hover{background:#272832;border-color:#ffffff30;transform:translateY(-1px)}
+    .outline-link svg,.small-icon{width:17px;height:17px;flex:none}
+    main{padding:38px 0 58px}
+    .intro{margin:0 0 27px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+    .eyebrow{color:#ff7587;letter-spacing:2.2px;text-transform:uppercase;font-weight:800;font-size:11px;margin:0 0 8px}
+    h1{font-size:clamp(30px,3.1vw,44px);letter-spacing:-1.9px;line-height:1.12;margin:0 0 10px;font-weight:780}
+    .intro p:last-child{color:var(--muted);margin:0;max-width:620px;font-size:14px}
+    .shortcut{color:#868996;font-size:12px;margin-bottom:5px;white-space:nowrap}
+    kbd{font:inherit;border:1px solid var(--stroke);background:#24252d;border-radius:5px;padding:3px 5px}
+    .workspace{display:grid;grid-template-columns:minmax(0,1.78fr) minmax(315px,1fr);align-items:start;gap:22px}
+    .card{background:rgba(21,22,28,.89);border:1px solid var(--stroke);border-radius:var(--radius);box-shadow:0 15px 35px rgba(0,0,0,.11)}
+    .video-card{overflow:hidden}
+    .player-wrap{position:relative;aspect-ratio:16/9;background:#070709;isolation:isolate}
+    iframe{width:100%;height:100%;border:0;display:block;background:#050508}
+    .local-notice{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;padding:32px;background:radial-gradient(circle at 48% 35%,#321b30 0%,#0a0a0e 65%);color:#fff;}
+    .local-notice[hidden]{display:none}
+    .local-notice h2{font-size:clamp(19px,2vw,27px);line-height:1.2;letter-spacing:-.6px}
+    .local-notice p{max-width:430px;margin:0;color:#bec0cc;font-size:13px;line-height:1.65}
+    .notice-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:10px}
+    .notice-dot{display:grid;place-items:center;width:56px;height:56px;border-radius:16px;background:#ff506d22;color:#ff657b}
+    .notice-dot svg{width:28px;height:28px}
+    .file-banner{display:none;gap:10px;align-items:center;justify-content:space-between;padding:13px 16px;margin-bottom:18px;background:#2b2028;border:1px solid #ff6c8338;border-radius:12px;color:#f9bdc8;font-size:12px}
+    .file-banner a{color:#ffd2da}
+    .file-banner.show{display:flex}
+    @media(max-width:630px){.file-banner{align-items:flex-start;flex-direction:column}.local-notice{padding:18px;gap:9px}.local-notice p{font-size:11px}.notice-actions .primary,.notice-actions .secondary{padding:8px 10px;min-height:36px}}
+
+    .video-meta{padding:22px 23px 22px}
+    .meta-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}
+    .live-label{display:inline-flex;align-items:center;gap:7px;font-weight:750;color:#fe7184;font-size:11px;text-transform:uppercase;letter-spacing:1.4px}
+    .live-label span{width:7px;height:7px;border-radius:50%;background:var(--red)}
+    .video-title{font-size:19px;letter-spacing:-.4px;margin:0 0 7px;overflow-wrap:anywhere;line-height:1.3}
+    .video-sub{font-size:12px;color:var(--muted);overflow-wrap:anywhere;margin:0}
+    .button-strip{display:flex;gap:9px;align-items:center}
+    .icon-button{display:inline-grid;place-items:center;width:34px;height:34px;border:1px solid var(--stroke);border-radius:10px;background:#23242d;color:#c2c3ca;transition:background .2s,color .2s,transform .2s}
+    .icon-button:hover{background:#333440;color:white;transform:translateY(-1px)}
+    .icon-button svg{width:16px;height:16px}
+    .form-panel{margin-top:19px;padding:22px}
+    .panel-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px}
+    h2{font-size:15px;letter-spacing:-.2px;margin:0;font-weight:730}
+    .panel-caption{font-size:12px;color:#8d8f9a}
+    .url-input{width:100%;min-width:0;background:#0e0f14;border:1px solid #34353f;border-radius:12px;padding:14px 16px;color:#f3f3f5;outline:none;transition:border-color .2s,box-shadow .2s}
+    .url-input::placeholder{color:#727481}
+    .url-input:focus{border-color:#ff6a7d;box-shadow:0 0 0 4px #ff566e1c;outline:none}
+    .form-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+    .primary,.secondary{border-radius:11px;padding:11px 16px;display:inline-flex;align-items:center;justify-content:center;gap:9px;font-weight:720;font-size:13px;border:1px solid transparent;transition:background .2s,transform .2s,border-color .2s;min-height:43px}
+    .primary{background:linear-gradient(145deg,#ff566d,#e53650);color:#fff;box-shadow:0 6px 17px #ef3a5325}
+    .primary:hover{background:linear-gradient(145deg,#ff687e,#e63d57);transform:translateY(-1px)}
+    .secondary{color:#d7d7df;background:#272832;border-color:#363741}
+    .secondary:hover{background:#32333e;transform:translateY(-1px)}
+    .secondary svg,.primary svg{width:16px;height:16px}
+    .form-help{font-size:12px;color:#91939f;margin:13px 0 0}
+    .error{display:none;margin-top:10px;color:#ff9aa8;font-size:12px}
+    .error.show{display:block}
+    .queue-card{overflow:hidden}
+    .queue-heading{padding:22px 21px 18px;border-bottom:1px solid var(--stroke)}
+    .queue-title-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .queue-title-row h2{font-size:17px}
+    .count{font-size:11px;padding:4px 9px;color:#d0d0d8;background:#2b2c35;border-radius:999px}
+    .queue-heading p{color:#8f919d;font-size:12px;margin:5px 0 0}
+    .queue-list{padding:10px;max-height:570px;overflow:auto;scrollbar-color:#42434e transparent;scrollbar-width:thin}
+    .queue-empty{padding:55px 20px;text-align:center;color:#8f919b}
+    .queue-empty svg{width:35px;height:35px;margin-bottom:10px;opacity:.5}
+    .queue-empty p{margin:0 0 3px;color:#d0d0d7;font-weight:650}
+    .queue-empty small{font-size:12px}
+    .queue-item{display:flex;gap:11px;align-items:center;border-radius:14px;padding:10px;transition:background .18s;border:1px solid transparent;position:relative}
+    .queue-item + .queue-item{margin-top:3px}
+    .queue-item:hover{background:#24252d}
+    .queue-item.active{background:#30252c;border-color:#ff5d7226}
+    .queue-play{min-width:0;flex:1;display:flex;gap:11px;align-items:center;text-align:left;border:0;background:none;color:inherit;padding:0;cursor:pointer}
+    .thumb{height:64px;width:114px;max-width:40%;flex:none;object-fit:cover;border-radius:9px;background:#26272e}
+    .queue-item-info{min-width:0;display:block}
+    .item-name{display:block;font-size:12.5px;line-height:1.35;font-weight:680;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+    .item-id{display:block;font-size:11px;color:#8c8e9a;margin-top:5px}
+    .queue-item.active .item-id{color:#ffa4af}
+    .remove{flex:none;width:30px;height:30px;border:0;border-radius:8px;background:transparent;color:#9294a0;display:grid;place-items:center}
+    .remove:hover{color:#fff;background:#ffffff16}
+    .remove svg{width:15px;height:15px}
+    .queue-footer{border-top:1px solid var(--stroke);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .text-btn{border:0;padding:7px 3px;color:#aaacb5;font-size:12px;background:none}
+    .text-btn:hover{color:#fff}
+    .text-btn:disabled{color:#555660;cursor:not-allowed}
+    .queue-actions{display:flex;gap:16px}
+    .tip-card{margin-top:19px;padding:21px 22px;background:linear-gradient(130deg,#231b27,#171820);border:1px solid #ffffff14;border-radius:18px}
+    .tip-head{display:flex;gap:10px;align-items:center;font-weight:740;font-size:13px}
+    .tip-head svg{width:18px;height:18px;color:#ff788d}
+    .tip-card p{font-size:12px;color:#b6b2bc;line-height:1.7;margin:9px 0 0}
+    .tip-card a{color:#ff9eac;text-underline-offset:3px}
+    .footer{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid var(--stroke);padding:21px 0 30px;color:#757782;font-size:11px}
+    #toast{position:fixed;bottom:23px;left:50%;z-index:20;transform:translate(-50%,20px);background:#292b33;border:1px solid #ffffff25;border-radius:12px;padding:11px 17px;color:#f1f1f5;box-shadow:0 12px 25px #0008;font-size:13px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
+    #toast.visible{opacity:1;transform:translate(-50%,0)}
+    @media(max-width:1020px){.workspace{grid-template-columns:1fr}.queue-list{max-height:370px}.intro{margin-bottom:22px}}
+    @media(max-width:630px){.shell{width:min(100% - 28px,1400px)}.topbar{height:74px}.tag,.shortcut{display:none}.intro{margin-bottom:22px}main{padding-top:30px}.intro h1{font-size:31px}.video-meta{padding:17px}.form-panel{padding:18px}.form-row .primary{flex:1}.queue-heading{padding:18px}.queue-footer{padding:14px 16px}.footer{flex-direction:column;align-items:flex-start}.outline-link{padding:9px 10px;font-size:12px}.brand{font-size:17px}.brand-mark{width:36px;height:36px}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="Tube Lounge home">
+        <span class="brand-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.4 5.8c0-.8.9-1.3 1.6-.9l9 5.7a1.7 1.7 0 0 1 0 2.8l-9 5.7c-.7.4-1.6-.1-1.6-.9z"/></svg></span>
+        <span>Tube <em>Lounge</em></span>
+      </a>
+      <div class="top-actions"><span class="tag"><i></i> <span id="launchStatus">Ready to watch</span></span>
+        <a class="outline-link" href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer">
+          Open YouTube <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9"/><path d="M20 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5"/></svg>
+        </a>
+      </div>
+    </header>
+    <main id="top">
+      <section class="intro">
+        <div><p class="eyebrow">Your personal video space</p><h1>Press play. Stay awhile.</h1><p>Watch YouTube videos here, add favorites to your queue, and pick up where you left off.</p></div>
+        <div class="shortcut">Quick paste: <kbd>Ctrl</kbd> + <kbd>K</kbd></div>
+      </section>
+      <div id="fileBanner" class="file-banner" role="status"><strong>Local-file mode</strong><span>To play inside this page, extract the ZIP and double-click <b>Start YouTube Lounge.bat</b>. This opens it at localhost.</span></div>
+      <div class="workspace">
+        <div>
+          <section class="card video-card" aria-label="YouTube player">
+            <div class="player-wrap">
+              <iframe id="player" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="eager"></iframe>
+              <div id="localNotice" class="local-notice" hidden>
+                <div class="notice-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/></svg></div>
+                <h2>One quick step to enable playback</h2>
+                <p>YouTube blocks embedded videos when this page is opened directly from a file. Open the downloaded ZIP and run <b>Start YouTube Lounge.bat</b> to launch this same player through localhost.</p>
+                <div class="notice-actions"><a id="openVideoFromNotice" class="primary" href="https://www.youtube.com/watch?v=jNQXAC9IVRw" target="_blank" rel="noopener noreferrer" style="text-decoration:none">Watch on YouTube</a></div>
+              </div>
+            </div>
+            <div class="video-meta">
+              <div class="meta-top"><div class="live-label"><span></span> Now playing</div><div class="button-strip">
+                <button id="copyBtn" class="icon-button" title="Copy video URL" aria-label="Copy video URL"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button>
+                <a id="openCurrent" class="icon-button" href="https://www.youtube.com/watch?v=jNQXAC9IVRw" target="_blank" rel="noopener noreferrer" title="Watch on YouTube" aria-label="Watch video directly on YouTube"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M20 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5"/></svg></a>
+              </div></div>
+              <h2 class="video-title" id="currentTitle">Me at the zoo — YouTube's first video</h2>
+              <p class="video-sub" id="currentUrl">youtube.com/watch?v=jNQXAC9IVRw</p>
+            </div>
+          </section>
+          <section class="card form-panel" aria-label="Load a video">
+            <div class="panel-heading"><h2>Load a YouTube video</h2><span class="panel-caption">Links, Shorts, or video IDs</span></div>
+            <form id="videoForm" novalidate>
+              <label for="linkInput" class="panel-caption" style="display:block;margin-bottom:8px">Paste a YouTube URL</label>
+              <input id="linkInput" class="url-input" type="text" inputmode="url" spellcheck="false" autocomplete="off" placeholder="https://www.youtube.com/watch?v=..." aria-describedby="inputError">
+              <div id="inputError" class="error" role="alert"></div>
+              <div class="form-row">
+                <button type="submit" class="primary"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.9l10-6.5a1 1 0 0 0 0-1.8l-10-6.5A1 1 0 0 0 8 5.5Z"/></svg> Play video</button>
+                <button type="button" id="addBtn" class="secondary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Add to queue</button>
+                <button type="button" id="searchBtn" class="secondary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.7" cy="10.7" r="6.7"/><path d="m16 16 5 5"/></svg> Search YouTube</button>
+              </div>
+            </form>
+            <p class="form-help">Tip: Give a saved video a custom name by clicking its title in the queue with your right mouse button.</p>
+          </section>
+        </div>
+        <aside>
+          <section class="card queue-card" aria-label="Your video queue">
+            <div class="queue-heading"><div class="queue-title-row"><h2>Up next</h2><span id="queueCount" class="count">1 video</span></div><p>Your saved videos live in this browser.</p></div>
+            <div class="queue-list" id="queueList" aria-live="polite"></div>
+            <div class="queue-footer"><div class="queue-actions"><button id="nextBtn" class="text-btn">Next video →</button></div><button id="clearBtn" class="text-btn">Clear queue</button></div>
+          </section>
+          <section class="tip-card"><div class="tip-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4M8 14a6 6 0 1 1 8 0c-.8.6-1 1.4-1 2H9c0-.6-.2-1.4-1-2Z"/></svg> A note about YouTube</div><p>This uses YouTube's official video embed. To avoid error 153, launch the page with <b>Start YouTube Lounge.bat</b> from the ZIP instead of opening the HTML directly. The launcher serves the page locally on your computer. Some creators disable embedding, so certain videos may still need to open on YouTube. Search opens YouTube in a new tab.</p></section>
+        </aside>
+      </div>
+    </main>
+    <footer class="footer"><span>Tube Lounge · Unofficial YouTube player · Not affiliated with YouTube</span><span>Your queue is stored locally on this device.</span></footer>
+  </div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script>
+    (() => {
+      'use strict';
+      const $ = id => document.getElementById(id);
+      const START = {id:'jNQXAC9IVRw', title:"Me at the zoo — YouTube's first video"};
+      const STORE = 'tube_lounge_queue_v1';
+      const CURRENT = 'tube_lounge_current_v1';
+      const idPattern = /^[A-Za-z0-9_-]{11}$/;
+      const isLocalFile = !['http:', 'https:'].includes(window.location.protocol);
+      if (isLocalFile) {
+        $('fileBanner').classList.add('show');
+        $('localNotice').hidden = false;
+        $('player').hidden = true;
+        $('player').style.display = 'none';
+        $('launchStatus').textContent = 'Launcher needed';
+      }
+      let queue = readJSON(STORE, [START]);
+      if (!Array.isArray(queue)) queue = [START];
+      queue = queue.filter(v => v && typeof v.id === 'string' && idPattern.test(v.id)).slice(0,100).map(v => ({id:v.id, title:String(v.title || 'YouTube video').slice(0,100)}));
+      let currentId = readJSON(CURRENT, START.id);
+      if (typeof currentId !== 'string' || !idPattern.test(currentId)) currentId = START.id;
+      let toastTimer;
+
+      function readJSON(key, fallback) {try {const v=localStorage.getItem(key); return v === null ? fallback : JSON.parse(v)} catch {return fallback}}
+      function save() {try {localStorage.setItem(STORE,JSON.stringify(queue));localStorage.setItem(CURRENT,JSON.stringify(currentId))}catch{}}
+      function toast(message) {const el=$('toast');el.textContent=message;el.classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('visible'),2300)}
+      function error(message) {const el=$('inputError');el.textContent=message;el.classList.add('show');$('linkInput').setAttribute('aria-invalid','true')}
+      function clearError() {$('inputError').classList.remove('show');$('inputError').textContent='';$('linkInput').removeAttribute('aria-invalid')}
+
+      function parseVideo(text) {
+        text=String(text || '').trim();
+        if (idPattern.test(text)) return {id:text};
+        if (!text || /\s/.test(text)) return null;
+        if (/^(youtube\.com|www\.youtube\.com|m\.youtube\.com|youtu\.be|www\.youtu\.be|music\.youtube\.com)\//i.test(text)) text='https://'+text;
+        let url;
+        try{url=new URL(text)}catch{return null}
+        if(!['https:','http:'].includes(url.protocol)) return null;
+        const host=url.hostname.toLowerCase();
+        let id='';
+        if(host==='youtu.be'||host==='www.youtu.be') id=url.pathname.split('/')[1]||'';
+        else if (host==='youtube.com'||host.endsWith('.youtube.com')||host==='youtube-nocookie.com'||host.endsWith('.youtube-nocookie.com')) {
+          if(url.pathname==='/watch') id=url.searchParams.get('v')||'';
+          else {
+            const match=url.pathname.match(/^\/(?:shorts|embed|live|v)\/([^/?#]+)/);
+            if(match) id=match[1];
+          }
+        }
+        return idPattern.test(id)?{id}:null;
+      }
+      function videoUrl(id){return 'https://www.youtube.com/watch?v='+encodeURIComponent(id)}
+      function videoTitle(id){return queue.find(v=>v.id===id)?.title || 'YouTube video · '+id}
+      function play(id, autoplay=true){
+        if(!idPattern.test(id))return;
+        currentId=id;
+        if (!isLocalFile) {
+          $('player').src='https://www.youtube.com/embed/'+encodeURIComponent(id)+'?rel=0&playsinline=1'+(autoplay?'&autoplay=1':'');
+        } else {
+          $('openVideoFromNotice').href=videoUrl(id);
+          $('localNotice').hidden=false;
+        }
+        $('currentTitle').textContent=videoTitle(id);
+        $('currentUrl').textContent='youtube.com/watch?v='+id;
+        $('openCurrent').href=videoUrl(id);
+        save();render();
+      }
+      function add(id){
+        if(queue.some(v=>v.id===id))return false;
+        if(queue.length>=100){toast('Queue limit: 100 videos');return false}
+        queue.push({id,title:'YouTube video · '+id});
+        save();render();return true;
+      }
+      function getInputVideo(){const item=parseVideo($('linkInput').value);if(!item){error('Enter a valid YouTube video link, Shorts link, or 11-character ID.');$('linkInput').focus();return null}clearError();return item}
+      function iconClose(){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg>'}
+      function render(){
+        $('queueCount').textContent=queue.length+' '+(queue.length===1?'video':'videos');
+        $('clearBtn').disabled=!queue.length;
+        $('nextBtn').disabled=!queue.length;
+        const list=$('queueList');list.replaceChildren();
+        if(!queue.length){
+          const empty=document.createElement('div');empty.className='queue-empty';
+          empty.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m10 8 5 4-5 4z"/></svg><p>Nothing in your queue yet</p><small>Paste a link and add a video.</small>';
+          list.append(empty);return;
+        }
+        queue.forEach((item,index)=>{
+          const row=document.createElement('div');row.className='queue-item'+(item.id===currentId?' active':'');
+          const btn=document.createElement('button');btn.className='queue-play';btn.type='button';btn.title='Play '+item.title;btn.setAttribute('aria-label','Play '+item.title);
+          const img=document.createElement('img');img.className='thumb';img.src='https://i.ytimg.com/vi/'+item.id+'/mqdefault.jpg';img.alt='';img.loading='lazy';
+          const info=document.createElement('span');info.className='queue-item-info';
+          const name=document.createElement('span');name.className='item-name';name.textContent=item.title;name.title='Right click to rename';
+          name.addEventListener('contextmenu',event=>{event.preventDefault();const value=prompt('Name this video:',item.title);if(value!==null&&value.trim()){item.title=value.trim().slice(0,100);save();render();if(currentId===item.id)$('currentTitle').textContent=item.title}});
+          const label=document.createElement('span');label.className='item-id';label.textContent=item.id===currentId?'● Now playing':'Video '+(index+1);
+          info.append(name,label);btn.append(img,info);btn.addEventListener('click',()=>play(item.id));
+          const rm=document.createElement('button');rm.type='button';rm.className='remove';rm.innerHTML=iconClose();rm.title='Remove from queue';rm.setAttribute('aria-label','Remove '+item.title+' from queue');
+          rm.addEventListener('click',()=>{queue=queue.filter(v=>v.id!==item.id);save();render();toast('Removed from queue')});
+          row.append(btn,rm);list.append(row);
+        });
+      }
+      $('videoForm').addEventListener('submit',event=>{event.preventDefault();const item=getInputVideo();if(!item)return;const added=add(item.id);play(item.id);toast(added?'Now playing · Added to queue':'Now playing')});
+      $('addBtn').addEventListener('click',()=>{const item=getInputVideo();if(!item)return;toast(add(item.id)?'Added to queue':'Already in your queue');$('linkInput').value=''});
+      $('searchBtn').addEventListener('click',()=>{const query=$('linkInput').value.trim();const url='https://www.youtube.com/results?search_query='+encodeURIComponent(query);window.open(url,'_blank','noopener,noreferrer')});
+      $('linkInput').addEventListener('input',clearError);
+      $('clearBtn').addEventListener('click',()=>{if(queue.length&&confirm('Clear all saved videos from your queue?')){queue=[];save();render();toast('Queue cleared')}});
+      $('nextBtn').addEventListener('click',()=>{if(!queue.length)return;const at=queue.findIndex(v=>v.id===currentId);play(queue[(at+1)%queue.length].id)});
+      $('copyBtn').addEventListener('click',async()=>{
+        const url=videoUrl(currentId);
+        try{await navigator.clipboard.writeText(url);toast('Video link copied')}catch{window.prompt('Copy this video URL:',url)}
+      });
+      document.addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'){event.preventDefault();$('linkInput').focus();$('linkInput').select()}});
+      save();render();play(currentId,false);
+    })();
+  </script>
+</body>
+</html>
