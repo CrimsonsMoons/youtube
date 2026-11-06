@@ -138,6 +138,18 @@
     @media(max-width:630px){.playback-notice{padding:13px;gap:7px}.playback-icon{height:30px;width:30px;border-radius:10px;font-size:17px}.playback-notice h2{font-size:18px}.playback-notice p{font-size:11px;line-height:1.45;margin:0}.playback-actions a{padding:7px 9px;min-height:33px;font-size:11px}.help-button{font-size:10px}}
     @media(max-width:360px){.playback-icon,.playback-kicker{display:none}.playback-notice h2{font-size:15px}.playback-notice p{font-size:10px}}
     [hidden]{display:none!important}
+    .mp4-panel{margin-top:18px;padding:22px;position:relative;overflow:hidden}
+    .mp4-heading{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .mp4-mark{width:32px;height:32px;border-radius:10px;background:rgba(135,121,252,.14);border:1px solid rgba(164,148,255,.26);display:grid;place-items:center;color:#c0b5ff;font-size:12px;font-weight:900;letter-spacing:-.2px}
+    .mp4-heading h2{flex:1}
+    .mp4-note{font-size:12px;line-height:1.65;color:#a3a4b1;margin:10px 0 16px}
+    .mp4-note strong{color:#e3e3eb;font-weight:680}
+    .mp4-example{color:#c3b5ff;background:none;border:0;font-size:12px;font-weight:650;text-decoration:underline;text-underline-offset:3px;padding:5px 0}
+    .mp4-url-label{display:block;color:#aeb0bb;font-size:12px;margin-bottom:8px}
+    .mp4-player-action{background:#37314a;border-color:#615574}
+    .mp4-player-action:hover{background:#493e60}
+    .mp4-thumb{display:grid;place-items:center;background:linear-gradient(135deg,#2c2740,#15141b);color:#cbbdff;border:1px solid rgba(184,167,250,.14);font-size:12px;font-weight:800;letter-spacing:1.1px}
+    @media(max-width:630px){.mp4-panel{padding:18px}.mp4-note{font-size:11px}}
     .file-player{display:block;width:100%;height:100%;object-fit:contain;background:#08090c}
     .meta-options{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:15px;padding-top:15px;border-top:1px solid var(--stroke)}
     .meta-options button{border:1px solid #ffffff20;border-radius:9px;color:#e0e0e8;background:#262730;font-size:12px;font-weight:650;min-height:37px;padding:7px 12px;cursor:pointer;transition:background .18s}
@@ -221,16 +233,30 @@
                 <button type="button" id="searchBtn" class="secondary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.7" cy="10.7" r="6.7"/><path d="m16 16 5 5"/></svg> Search YouTube</button>
               </div>
             </form>
-            <p class="form-help">Tip: Give a saved video a custom name by clicking its title in the queue with your right mouse button.</p>
+            <p class="form-help">Tip: Right-click a queue item's title to rename it.</p>
+          </section>
+          <section class="card mp4-panel" aria-label="Play a direct video file link">
+            <div class="mp4-heading"><span class="mp4-mark" aria-hidden="true">MP4</span><h2>Play a direct video link</h2><span class="panel-caption">MP4 · WebM · Ogg</span></div>
+            <p class="mp4-note">Got a <strong>real video file URL</strong> from a source you are allowed to use? Play it here without YouTube's iframe. A YouTube <strong>watch?v=</strong> link isn't an MP4 and cannot be converted on GitHub Pages.</p>
+            <form id="mp4Form" novalidate>
+              <label for="mp4Input" class="mp4-url-label">Direct link to a playable video file (HTTPS)</label>
+              <input id="mp4Input" class="url-input" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://example.com/my-video.mp4" aria-describedby="mp4Error">
+              <div id="mp4Error" class="error" role="alert"></div>
+              <div class="form-row">
+                <button type="submit" class="primary mp4-player-action">▶ Play video URL</button>
+                <button type="button" id="saveMp4Btn" class="secondary">+ Save to queue</button>
+                <button type="button" id="exampleMp4Btn" class="mp4-example">Try a free sample MP4</button>
+              </div>
+            </form>
           </section>
         </div>
         <aside>
           <section class="card queue-card" aria-label="Your video queue">
-            <div class="queue-heading"><div class="queue-title-row"><h2>Up next</h2><span id="queueCount" class="count">1 video</span></div><p>Your saved videos live in this browser.</p></div>
+            <div class="queue-heading"><div class="queue-title-row"><h2>Up next</h2><span id="queueCount" class="count">1 video</span></div><p>Save YouTube links or direct MP4 links in this browser.</p></div>
             <div class="queue-list" id="queueList" aria-live="polite"></div>
             <div class="queue-footer"><div class="queue-actions"><button id="nextBtn" class="text-btn">Next video →</button></div><button id="clearBtn" class="text-btn">Clear queue</button></div>
           </section>
-          <section class="tip-card"><div class="tip-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4M8 14a6 6 0 1 1 8 0c-.8.6-1 1.4-1 2H9c0-.6-.2-1.4-1-2Z"/></svg> A note about YouTube</div><p><b>Error 152</b> means YouTube rejected playback in an external player. GitHub Pages cannot override the video's settings. Open it on YouTube in a separate window; age restrictions still require an eligible account. If you already have a legitimate video file on your device, select <b>Play a video file</b> to watch it in this page without uploading it. Private or deleted videos cannot be recovered here.</p></section>
+          <section class="tip-card"><div class="tip-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4M8 14a6 6 0 1 1 8 0c-.8.6-1 1.4-1 2H9c0-.6-.2-1.4-1-2Z"/></svg> A note about YouTube</div><p><b>Error 152</b> means YouTube rejected playback in an external player. GitHub Pages cannot override the video's settings. Open it on YouTube in a separate window; age restrictions still require an eligible account. If you already have a legitimate video file on your device, select <b>Play a video file</b> to watch it in this page without uploading it. Private or deleted videos cannot be recovered here. Direct MP4 files are a separate supported playback source—not a way to unlock videos that YouTube restricts.</p></section>
         </aside>
       </div>
     </main>
@@ -255,7 +281,7 @@
       }
       let queue = readJSON(STORE, [START]);
       if (!Array.isArray(queue)) queue = [START];
-      queue = queue.filter(v => v && typeof v.id === 'string' && idPattern.test(v.id)).slice(0,100).map(v => ({id:v.id, title:String(v.title || 'YouTube video').slice(0,100)}));
+      queue = queue.filter(v => v && (idPattern.test(v.id || '') || (v.kind === 'mp4' && validateMp4Url(v.url)))).slice(0,100).map(v => v.kind === 'mp4' ? {kind:'mp4',url:v.url,title:String(v.title||friendlyMediaName(v.url)).slice(0,100)} : {id:v.id,title:String(v.title||'YouTube video').slice(0,100)});
       let currentId = readJSON(CURRENT, START.id);
       if (typeof currentId !== 'string' || !idPattern.test(currentId)) currentId = START.id;
       let toastTimer;
@@ -264,6 +290,8 @@
       let lastPlaybackError = null;
       let localObjectUrl = null;
       let localMode = false;
+      let remoteMp4Url = null;
+      let mediaSourceType = 'youtube';
 
       function readJSON(key, fallback) {try {const v=localStorage.getItem(key); return v === null ? fallback : JSON.parse(v)} catch {return fallback}}
       function save() {try {localStorage.setItem(STORE,JSON.stringify(queue));localStorage.setItem(CURRENT,JSON.stringify(currentId))}catch{}}
@@ -298,8 +326,38 @@
         const query=/^YouTube video ·|^YouTube video$/i.test(title)?id:title;
         return 'https://www.youtube.com/results?search_query='+encodeURIComponent(query);
       }
+      function setMP4Error(message){$('mp4Error').textContent=message;$('mp4Error').classList.add('show');$('mp4Input').setAttribute('aria-invalid','true')}
+      function clearMP4Error(){$('mp4Error').textContent='';$('mp4Error').classList.remove('show');$('mp4Input').removeAttribute('aria-invalid')}
+      function validateMp4Url(text){
+        if(typeof text !== 'string' || text.length>2048)return null;
+        try{
+          const url=new URL(text.trim());
+          if(!['https:','http:'].includes(url.protocol) || url.username || url.password)return null;
+          if(/^(.+\.)?(?:youtube\.com|youtu\.be|youtube-nocookie\.com)$/i.test(url.hostname))return null;
+          if(location.protocol==='https:'&&url.protocol!=='https:')return null;
+          return url.href;
+        }catch{return null}
+      }
+      function friendlyMediaName(url){
+        try{const name=decodeURIComponent(new URL(url).pathname.split('/').pop()||'Direct video');return name.slice(0,90)||'Direct video'}catch{return 'Direct video'}
+      }
+      function getMp4Input(){
+        const raw=$('mp4Input').value.trim();
+        if(/(?:youtube\.com|youtu\.be)/i.test(raw)){setMP4Error('That is a YouTube webpage, not a direct MP4. The GitHub Pages site cannot convert YouTube links.');return null}
+        const url=validateMp4Url(raw);
+        if(!url){setMP4Error('Enter an HTTP(S) direct video URL. GitHub Pages requires HTTPS media sources.');return null}
+        clearMP4Error();return url;
+      }
+      function showMP4Help(){
+        $('playbackHeading').textContent='This video URL could not be played';
+        $('playbackDetails').textContent='The link may not point to a playable MP4/WebM file, the source may have expired, or its host may block external playback. YouTube watch links cannot be converted here.';
+        $('playbackKicker').textContent='Direct video playback';
+        $('watchDirect').href=remoteMp4Url||'#';$('watchDirect').textContent='Open original file ↗';
+        $('overlayPopoutBtn').hidden=true;$('findAlternate').hidden=true;$('retryBtn').hidden=true;
+        $('playbackNotice').hidden=false;
+      }
       function showPlaybackHelp(code=null){
-        if(localMode){toast('Your local video plays directly from your device');return}
+        if(localMode){if(mediaSourceType==='mp4')showMP4Help();else toast('This video is playing from a local file');return}
         lastPlaybackError=code;
         const messages={
           2:['Invalid YouTube link','The link or video ID is not valid. Check the address and try again.'],
@@ -315,6 +373,8 @@
         $('playbackDetails').textContent=detail;
         $('playbackKicker').textContent=code===null?'Playback help':`YouTube error ${code}`;
         $('watchDirect').href=videoUrl(currentId);
+        $('watchDirect').textContent='Watch on YouTube ↗';
+        $('overlayPopoutBtn').hidden=false;$('findAlternate').hidden=false;
         $('findAlternate').href=searchAlternateUrl(currentId);
         $('retryBtn').hidden = [100,101,150,152].includes(Number(code));
         $('playbackNotice').hidden=false;
@@ -334,9 +394,10 @@
         if(!localMode)return;
         const local=$('localPlayer');local.pause();local.removeAttribute('src');local.load();local.hidden=true;
         if(localObjectUrl){URL.revokeObjectURL(localObjectUrl);localObjectUrl=null;}
-        localMode=false;
+        localMode=false;remoteMp4Url=null;mediaSourceType='youtube';
         $('player').hidden=false;$('player').style.display='block';
-        $('copyBtn').hidden=false;$('openCurrent').hidden=false;
+        $('copyBtn').hidden=false;$('openCurrent').hidden=false;$('popoutBtn').hidden=false;
+        $('openCurrent').title='Watch on YouTube';$('openCurrent').setAttribute('aria-label','Watch on YouTube');
         $('localStatus').hidden=true;
         if(isLocalFile)$('localNotice').hidden=false;
         $('launchStatus').textContent='Ready to watch';
@@ -347,7 +408,7 @@
         if(!(file.type.startsWith('video/') || /\.(mp4|webm|ogv|ogg|m4v|mov)$/i.test(file.name))){toast('Choose a supported video file');return;}
         stopLocalPlayback();
         try{if(ytReady&&ytPlayer)ytPlayer.pauseVideo()}catch{}
-        localObjectUrl=URL.createObjectURL(file);localMode=true;
+        localObjectUrl=URL.createObjectURL(file);localMode=true;mediaSourceType='file';
         $('player').style.display='none';$('player').hidden=true;
         $('localNotice').hidden=true;
         hidePlaybackHelp();
@@ -355,10 +416,30 @@
         local.play().catch(()=>{toast('Tap Play in the video player to start')});
         $('currentTitle').textContent=file.name;
         $('currentUrl').textContent='Local file · Not uploaded to YouTube';
-        $('copyBtn').hidden=true;$('openCurrent').hidden=true;
+        $('copyBtn').hidden=true;$('openCurrent').hidden=true;$('popoutBtn').hidden=true;
+        $('localStatus').textContent='This video stays on your device and is not uploaded.';
         $('localStatus').hidden=false;
         $('launchStatus').textContent='Playing a local file';
-        toast('Playing from your device');
+        render();toast('Playing from your device');
+      }
+      function playRemoteMp4(url){
+        if(!url)return;
+        stopLocalPlayback();
+        try{if(ytReady&&ytPlayer)ytPlayer.pauseVideo()}catch{}
+        remoteMp4Url=url;mediaSourceType='mp4';localMode=true;
+        $('player').style.display='none';$('player').hidden=true;
+        $('localNotice').hidden=true;hidePlaybackHelp();
+        const local=$('localPlayer');local.src=url;local.hidden=false;local.load();
+        local.play().catch(()=>{});
+        $('currentTitle').textContent=queue.find(v=>v.kind==='mp4'&&v.url===url)?.title||friendlyMediaName(url);
+        $('currentUrl').textContent=url;
+        $('copyBtn').hidden=false;$('openCurrent').hidden=false;$('openCurrent').href=url;
+        $('openCurrent').title='Open original video file';$('openCurrent').setAttribute('aria-label','Open original video file');
+        $('popoutBtn').hidden=true;
+        $('localStatus').hidden=false;
+        $('localStatus').textContent='Playing a direct video URL. Playback depends on the video host.';
+        $('launchStatus').textContent='Direct media player';
+        render();toast('Loading direct video');
       }
       function openOfficialWindow(){
         // YouTube's normal watch page may play videos its iframe refuses.
@@ -412,6 +493,13 @@
         script.referrerPolicy='strict-origin-when-cross-origin';
         document.head.append(script);
       }
+      function addMp4(url){
+        if(queue.some(v=>v.kind==='mp4'&&v.url===url))return false;
+        if(queue.length>=100){toast('Queue limit: 100 videos');return false}
+        queue.push({kind:'mp4',url,title:friendlyMediaName(url)});
+        save();render();return true;
+      }
+      function playQueueItem(item){if(item?.kind==='mp4')playRemoteMp4(item.url);else if(item)play(item.id)}
       function add(id){
         if(queue.some(v=>v.id===id))return false;
         if(queue.length>=100){toast('Queue limit: 100 videos');return false}
@@ -431,16 +519,20 @@
           list.append(empty);return;
         }
         queue.forEach((item,index)=>{
-          const row=document.createElement('div');row.className='queue-item'+(item.id===currentId?' active':'');
+          const isMp4=item.kind==='mp4';
+          const isActive=isMp4?(mediaSourceType==='mp4'&&remoteMp4Url===item.url):(!localMode&&item.id===currentId);
+          const row=document.createElement('div');row.className='queue-item'+(isActive?' active':'');
           const btn=document.createElement('button');btn.className='queue-play';btn.type='button';btn.title='Play '+item.title;btn.setAttribute('aria-label','Play '+item.title);
-          const img=document.createElement('img');img.className='thumb';img.src='https://i.ytimg.com/vi/'+item.id+'/mqdefault.jpg';img.alt='';img.loading='lazy';
+          const img=isMp4?document.createElement('div'):document.createElement('img');
+          if(isMp4){img.className='thumb mp4-thumb';img.textContent='MP4'}
+          else {img.className='thumb';img.src='https://i.ytimg.com/vi/'+item.id+'/mqdefault.jpg';img.alt='';img.loading='lazy'}
           const info=document.createElement('span');info.className='queue-item-info';
           const name=document.createElement('span');name.className='item-name';name.textContent=item.title;name.title='Right click to rename';
-          name.addEventListener('contextmenu',event=>{event.preventDefault();const value=prompt('Name this video:',item.title);if(value!==null&&value.trim()){item.title=value.trim().slice(0,100);save();render();if(currentId===item.id)$('currentTitle').textContent=item.title}});
-          const label=document.createElement('span');label.className='item-id';label.textContent=item.id===currentId?'● Now playing':'Video '+(index+1);
-          info.append(name,label);btn.append(img,info);btn.addEventListener('click',()=>play(item.id));
+          name.addEventListener('contextmenu',event=>{event.preventDefault();const value=prompt('Name this video:',item.title);if(value!==null&&value.trim()){item.title=value.trim().slice(0,100);save();render();if(isActive)$('currentTitle').textContent=item.title}});
+          const label=document.createElement('span');label.className='item-id';label.textContent=isActive?'● Now playing':(isMp4?'Direct MP4 / WebM':'YouTube video '+(index+1));
+          info.append(name,label);btn.append(img,info);btn.addEventListener('click',()=>playQueueItem(item));
           const rm=document.createElement('button');rm.type='button';rm.className='remove';rm.innerHTML=iconClose();rm.title='Remove from queue';rm.setAttribute('aria-label','Remove '+item.title+' from queue');
-          rm.addEventListener('click',()=>{queue=queue.filter(v=>v.id!==item.id);save();render();toast('Removed from queue')});
+          rm.addEventListener('click',()=>{queue=queue.filter(v=>v!==item);save();render();toast('Removed from queue')});
           row.append(btn,rm);list.append(row);
         });
       }
@@ -448,8 +540,13 @@
       $('addBtn').addEventListener('click',()=>{const item=getInputVideo();if(!item)return;toast(add(item.id)?'Added to queue':'Already in your queue');$('linkInput').value=''});
       $('searchBtn').addEventListener('click',()=>{const query=$('linkInput').value.trim();const url='https://www.youtube.com/results?search_query='+encodeURIComponent(query);window.open(url,'_blank','noopener,noreferrer')});
       $('linkInput').addEventListener('input',clearError);
+      $('mp4Input').addEventListener('input',clearMP4Error);
+      $('mp4Form').addEventListener('submit',event=>{event.preventDefault();const url=getMp4Input();if(url)playRemoteMp4(url)});
+      $('saveMp4Btn').addEventListener('click',()=>{const url=getMp4Input();if(url)toast(addMp4(url)?'Direct video saved to queue':'Already saved in queue')});
+      $('exampleMp4Btn').addEventListener('click',()=>{$('mp4Input').value='https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';clearMP4Error();playRemoteMp4($('mp4Input').value)});
+      $('localPlayer').addEventListener('error',()=>{if(mediaSourceType==='mp4'&&remoteMp4Url)showMP4Help();else if(mediaSourceType==='file')toast('Could not play this video file: unsupported format or codec')});
       $('clearBtn').addEventListener('click',()=>{if(queue.length&&confirm('Clear all saved videos from your queue?')){queue=[];save();render();toast('Queue cleared')}});
-      $('nextBtn').addEventListener('click',()=>{if(!queue.length)return;const at=queue.findIndex(v=>v.id===currentId);play(queue[(at+1)%queue.length].id)});
+      $('nextBtn').addEventListener('click',()=>{if(!queue.length)return;const at=queue.findIndex(v=>v.kind==='mp4'?(mediaSourceType==='mp4'&&v.url===remoteMp4Url):(!localMode&&v.id===currentId));playQueueItem(queue[(at+1)%queue.length])});
       $('helpBtn').addEventListener('click',()=>showPlaybackHelp(lastPlaybackError));
       $('popoutBtn').addEventListener('click',openOfficialWindow);
       $('overlayPopoutBtn').addEventListener('click',openOfficialWindow);
@@ -459,7 +556,7 @@
       $('dismissBtn').addEventListener('click',hidePlaybackHelp);
       $('retryBtn').addEventListener('click',()=>{hidePlaybackHelp();if(ytReady&&ytPlayer){try{ytPlayer.loadVideoById(currentId);return}catch{}}$('player').src=embedUrl(currentId,true)});
       $('copyBtn').addEventListener('click',async()=>{
-        const url=videoUrl(currentId);
+        const url=(mediaSourceType==='mp4'&&remoteMp4Url)?remoteMp4Url:videoUrl(currentId);
         try{await navigator.clipboard.writeText(url);toast('Video link copied')}catch{window.prompt('Copy this video URL:',url)}
       });
       document.addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'){event.preventDefault();$('linkInput').focus();$('linkInput').select()}});
