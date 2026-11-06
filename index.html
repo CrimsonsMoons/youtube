@@ -137,6 +137,16 @@
     .help-button:hover{background:#37313b;color:#fff}
     @media(max-width:630px){.playback-notice{padding:13px;gap:7px}.playback-icon{height:30px;width:30px;border-radius:10px;font-size:17px}.playback-notice h2{font-size:18px}.playback-notice p{font-size:11px;line-height:1.45;margin:0}.playback-actions a{padding:7px 9px;min-height:33px;font-size:11px}.help-button{font-size:10px}}
     @media(max-width:360px){.playback-icon,.playback-kicker{display:none}.playback-notice h2{font-size:15px}.playback-notice p{font-size:10px}}
+    [hidden]{display:none!important}
+    .file-player{display:block;width:100%;height:100%;object-fit:contain;background:#08090c}
+    .meta-options{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:15px;padding-top:15px;border-top:1px solid var(--stroke)}
+    .meta-options button{border:1px solid #ffffff20;border-radius:9px;color:#e0e0e8;background:#262730;font-size:12px;font-weight:650;min-height:37px;padding:7px 12px;cursor:pointer;transition:background .18s}
+    .meta-options button:hover{background:#33343e}
+    .meta-status{font-size:11px;color:#a9abb6}
+    .playback-actions button.secondary{font-size:12px}
+    @media(max-width:630px){.meta-options{gap:7px}.meta-options button{font-size:11px;padding:7px 9px}.playback-actions{gap:6px}.playback-actions a,.playback-actions button{font-size:10px!important;padding:7px 8px!important;min-height:32px!important}.playback-actions.mini button{font-size:10px!important}}
+    @media(max-height:470px){.playback-notice{overflow-y:auto;justify-content:flex-start}}
+    @media(max-width:630px){.playback-actions.mini{display:none}}
   </style>
 </head>
 <body>
@@ -163,6 +173,7 @@
           <section class="card video-card" aria-label="YouTube player">
             <div class="player-wrap">
               <iframe id="player" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="eager"></iframe>
+              <video id="localPlayer" class="file-player" controls playsinline hidden aria-label="Local video player"></video>
               <div id="playbackNotice" class="playback-notice" hidden role="alertdialog" aria-labelledby="playbackHeading" aria-describedby="playbackDetails">
                 <div class="playback-icon" aria-hidden="true">!</div>
                 <div class="playback-kicker" id="playbackKicker">Playback help</div>
@@ -170,9 +181,10 @@
                 <p id="playbackDetails">Some YouTube videos can only be viewed directly on YouTube.</p>
                 <div class="playback-actions">
                   <a id="watchDirect" class="primary" target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/">Watch on YouTube ↗</a>
+                  <button type="button" id="overlayPopoutBtn" class="secondary">Open YouTube window</button>
                   <a id="findAlternate" class="secondary" target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/results?search_query=video">Find another upload</a>
                 </div>
-                <div class="playback-actions mini"><button type="button" id="retryBtn" class="text-btn">Retry playback</button><button type="button" id="dismissBtn" class="text-btn">Dismiss</button></div>
+                <div class="playback-actions mini"><button type="button" id="localFromErrorBtn" class="text-btn">Play a video file instead</button><button type="button" id="retryBtn" class="text-btn">Retry playback</button><button type="button" id="dismissBtn" class="text-btn">Dismiss</button></div>
               </div>
               <div id="localNotice" class="local-notice" hidden>
                 <div class="notice-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/></svg></div>
@@ -189,6 +201,12 @@
               </div></div>
               <h2 class="video-title" id="currentTitle">Me at the zoo — YouTube's first video</h2>
               <p class="video-sub" id="currentUrl">youtube.com/watch?v=jNQXAC9IVRw</p>
+              <div class="meta-options">
+                <button type="button" id="popoutBtn">Open current video on YouTube ↗</button>
+                <button type="button" id="localFileBtn">Play a video file from my device</button>
+                <span class="meta-status" id="localStatus" hidden>Local files play on your device and are not uploaded or saved to the queue.</span>
+              </div>
+              <input id="localFileInput" type="file" accept="video/*,.mp4,.webm,.ogv,.mov,.m4v" hidden aria-label="Choose a local video file">
             </div>
           </section>
           <section class="card form-panel" aria-label="Load a video">
@@ -212,7 +230,7 @@
             <div class="queue-list" id="queueList" aria-live="polite"></div>
             <div class="queue-footer"><div class="queue-actions"><button id="nextBtn" class="text-btn">Next video →</button></div><button id="clearBtn" class="text-btn">Clear queue</button></div>
           </section>
-          <section class="tip-card"><div class="tip-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4M8 14a6 6 0 1 1 8 0c-.8.6-1 1.4-1 2H9c0-.6-.2-1.4-1-2Z"/></svg> A note about YouTube</div><p>This uses YouTube's official embedded player. If a video is unavailable here, use <b>Video not playing?</b> or <b>Watch on YouTube</b>. Videos blocked from embedding may work on YouTube itself; private, deleted and age-restricted videos cannot be unlocked by this page. Host the HTML on GitHub Pages to avoid local-file playback errors.</p></section>
+          <section class="tip-card"><div class="tip-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4M8 14a6 6 0 1 1 8 0c-.8.6-1 1.4-1 2H9c0-.6-.2-1.4-1-2Z"/></svg> A note about YouTube</div><p><b>Error 152</b> means YouTube rejected playback in an external player. GitHub Pages cannot override the video's settings. Open it on YouTube in a separate window; age restrictions still require an eligible account. If you already have a legitimate video file on your device, select <b>Play a video file</b> to watch it in this page without uploading it. Private or deleted videos cannot be recovered here.</p></section>
         </aside>
       </div>
     </main>
@@ -244,6 +262,8 @@
       let ytPlayer = null;
       let ytReady = false;
       let lastPlaybackError = null;
+      let localObjectUrl = null;
+      let localMode = false;
 
       function readJSON(key, fallback) {try {const v=localStorage.getItem(key); return v === null ? fallback : JSON.parse(v)} catch {return fallback}}
       function save() {try {localStorage.setItem(STORE,JSON.stringify(queue));localStorage.setItem(CURRENT,JSON.stringify(currentId))}catch{}}
@@ -279,6 +299,7 @@
         return 'https://www.youtube.com/results?search_query='+encodeURIComponent(query);
       }
       function showPlaybackHelp(code=null){
+        if(localMode){toast('Your local video plays directly from your device');return}
         lastPlaybackError=code;
         const messages={
           2:['Invalid YouTube link','The link or video ID is not valid. Check the address and try again.'],
@@ -286,6 +307,7 @@
           100:['This video is private or removed','YouTube says the video wasn’t found, was removed, or is private. This player cannot restore access to it. You can search for an available upload.'],
           101:['Embedding is disabled','The creator does not allow this video to play inside other websites. It may still play directly on YouTube.'],
           150:['Embedding is disabled','The creator does not allow this video to play inside other websites. It may still play directly on YouTube.'],
+          152:['YouTube blocked this embedded player','This particular video cannot play on third-party websites. Open it on YouTube instead, or play an authorized video file you already have. Changing the iframe URL will not remove a YouTube playback restriction.'],
           153:['Player identification problem','YouTube did not receive the required website identity. Open this page from GitHub Pages or localhost rather than a downloaded HTML file.']
         };
         const [heading,detail]=messages[code] || ['Video unavailable in this player','Some videos cannot play in an embedded player, including age-restricted content. You can try YouTube directly or search for a different authorized upload.'];
@@ -294,6 +316,7 @@
         $('playbackKicker').textContent=code===null?'Playback help':`YouTube error ${code}`;
         $('watchDirect').href=videoUrl(currentId);
         $('findAlternate').href=searchAlternateUrl(currentId);
+        $('retryBtn').hidden = [100,101,150,152].includes(Number(code));
         $('playbackNotice').hidden=false;
       }
       function hidePlaybackHelp(){
@@ -307,8 +330,44 @@
         if(location.protocol==='https:'||location.protocol==='http:') params.set('origin',location.origin);
         return 'https://www.youtube.com/embed/'+encodeURIComponent(id)+'?'+params.toString();
       }
+      function stopLocalPlayback(){
+        if(!localMode)return;
+        const local=$('localPlayer');local.pause();local.removeAttribute('src');local.load();local.hidden=true;
+        if(localObjectUrl){URL.revokeObjectURL(localObjectUrl);localObjectUrl=null;}
+        localMode=false;
+        $('player').hidden=false;$('player').style.display='block';
+        $('copyBtn').hidden=false;$('openCurrent').hidden=false;
+        $('localStatus').hidden=true;
+        if(isLocalFile)$('localNotice').hidden=false;
+        $('launchStatus').textContent='Ready to watch';
+      }
+      function playLocalFile(file){
+        if(!file)return;
+        // Local files are used only after an explicit user choice; never uploaded.
+        if(!(file.type.startsWith('video/') || /\.(mp4|webm|ogv|ogg|m4v|mov)$/i.test(file.name))){toast('Choose a supported video file');return;}
+        stopLocalPlayback();
+        try{if(ytReady&&ytPlayer)ytPlayer.pauseVideo()}catch{}
+        localObjectUrl=URL.createObjectURL(file);localMode=true;
+        $('player').style.display='none';$('player').hidden=true;
+        $('localNotice').hidden=true;
+        hidePlaybackHelp();
+        const local=$('localPlayer');local.src=localObjectUrl;local.hidden=false;
+        local.play().catch(()=>{toast('Tap Play in the video player to start')});
+        $('currentTitle').textContent=file.name;
+        $('currentUrl').textContent='Local file · Not uploaded to YouTube';
+        $('copyBtn').hidden=true;$('openCurrent').hidden=true;
+        $('localStatus').hidden=false;
+        $('launchStatus').textContent='Playing a local file';
+        toast('Playing from your device');
+      }
+      function openOfficialWindow(){
+        // YouTube's normal watch page may play videos its iframe refuses.
+        // The browser may open a tab instead of a window depending on settings.
+        window.open(videoUrl(currentId),'_blank','width=1120,height=720,noopener,noreferrer,resizable=yes,scrollbars=yes');
+      }
       function play(id, autoplay=true){
         if(!idPattern.test(id))return;
+        stopLocalPlayback();
         currentId=id;
         hidePlaybackHelp();
         if (!isLocalFile) {
@@ -392,6 +451,11 @@
       $('clearBtn').addEventListener('click',()=>{if(queue.length&&confirm('Clear all saved videos from your queue?')){queue=[];save();render();toast('Queue cleared')}});
       $('nextBtn').addEventListener('click',()=>{if(!queue.length)return;const at=queue.findIndex(v=>v.id===currentId);play(queue[(at+1)%queue.length].id)});
       $('helpBtn').addEventListener('click',()=>showPlaybackHelp(lastPlaybackError));
+      $('popoutBtn').addEventListener('click',openOfficialWindow);
+      $('overlayPopoutBtn').addEventListener('click',openOfficialWindow);
+      $('localFileBtn').addEventListener('click',()=>$('localFileInput').click());
+      $('localFromErrorBtn').addEventListener('click',()=>$('localFileInput').click());
+      $('localFileInput').addEventListener('change',event=>{const file=event.target.files?.[0];playLocalFile(file);event.target.value='';});
       $('dismissBtn').addEventListener('click',hidePlaybackHelp);
       $('retryBtn').addEventListener('click',()=>{hidePlaybackHelp();if(ytReady&&ytPlayer){try{ytPlayer.loadVideoById(currentId);return}catch{}}$('player').src=embedUrl(currentId,true)});
       $('copyBtn').addEventListener('click',async()=>{
@@ -399,6 +463,7 @@
         try{await navigator.clipboard.writeText(url);toast('Video link copied')}catch{window.prompt('Copy this video URL:',url)}
       });
       document.addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'){event.preventDefault();$('linkInput').focus();$('linkInput').select()}});
+      window.addEventListener('pagehide',()=>{if(localObjectUrl)URL.revokeObjectURL(localObjectUrl)});
       save();render();play(currentId,false);loadYouTubeAPI();
     })();
   </script>
