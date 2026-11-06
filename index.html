@@ -117,9 +117,26 @@
     .footer{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid var(--stroke);padding:21px 0 30px;color:#757782;font-size:11px}
     #toast{position:fixed;bottom:23px;left:50%;z-index:20;transform:translate(-50%,20px);background:#292b33;border:1px solid #ffffff25;border-radius:12px;padding:11px 17px;color:#f1f1f5;box-shadow:0 12px 25px #0008;font-size:13px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
     #toast.visible{opacity:1;transform:translate(-50%,0)}
-    @media(max-width:1020px){.workspace{grid-template-columns:1fr}.queue-list{max-height:370px}.intro{margin-bottom:22px}}
+    @media(max-width:1020px){.workspace{grid-template-columns:minmax(0,1fr)}.workspace>div,.workspace>aside{min-width:0}.queue-list{max-height:370px}.intro{margin-bottom:22px}}
     @media(max-width:630px){.shell{width:min(100% - 28px,1400px)}.topbar{height:74px}.tag,.shortcut{display:none}.intro{margin-bottom:22px}main{padding-top:30px}.intro h1{font-size:31px}.video-meta{padding:17px}.form-panel{padding:18px}.form-row .primary{flex:1}.queue-heading{padding:18px}.queue-footer{padding:14px 16px}.footer{flex-direction:column;align-items:flex-start}.outline-link{padding:9px 10px;font-size:12px}.brand{font-size:17px}.brand-mark{width:36px;height:36px}}
     @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+    /* Supported fallback for unavailable embeds; it never attempts to bypass a video's restrictions. */
+    .player-wrap{overflow:hidden}
+    .playback-notice{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;padding:28px;background:radial-gradient(ellipse at 50% 40%,#2a1828 0%,#111116 68%,#09090c 100%)}
+    .playback-notice[hidden]{display:none}
+    .playback-icon{display:grid;place-items:center;height:43px;width:43px;border:1px solid #ff718347;background:#ff566d20;color:#ff8ea0;border-radius:15px;font-size:23px;font-weight:800}
+    .playback-kicker{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#ff91a0}
+    .playback-notice h2{font-size:clamp(18px,2.5vw,26px);line-height:1.2;letter-spacing:-.6px;max-width:550px;margin:0}
+    .playback-notice p{max-width:510px;margin:0 0 7px;color:#bbbcc7;font-size:13px;line-height:1.6}
+    .playback-actions{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;align-items:center}
+    .playback-actions a{text-decoration:none}
+    .playback-actions.mini{margin-top:0}
+    .playback-actions.mini .text-btn{padding:4px 9px}
+    .help-button{border:1px solid #ffffff1e;background:#272832;color:#e4d4da;border-radius:9px;font-size:11px;min-height:34px;padding:6px 10px}
+    .help-button:hover{background:#37313b;color:#fff}
+    @media(max-width:630px){.playback-notice{padding:13px;gap:7px}.playback-icon{height:30px;width:30px;border-radius:10px;font-size:17px}.playback-notice h2{font-size:18px}.playback-notice p{font-size:11px;line-height:1.45;margin:0}.playback-actions a{padding:7px 9px;min-height:33px;font-size:11px}.help-button{font-size:10px}}
+    @media(max-width:360px){.playback-icon,.playback-kicker{display:none}.playback-notice h2{font-size:15px}.playback-notice p{font-size:10px}}
   </style>
 </head>
 <body>
@@ -146,6 +163,17 @@
           <section class="card video-card" aria-label="YouTube player">
             <div class="player-wrap">
               <iframe id="player" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="eager"></iframe>
+              <div id="playbackNotice" class="playback-notice" hidden role="alertdialog" aria-labelledby="playbackHeading" aria-describedby="playbackDetails">
+                <div class="playback-icon" aria-hidden="true">!</div>
+                <div class="playback-kicker" id="playbackKicker">Playback help</div>
+                <h2 id="playbackHeading">Video unavailable in this player</h2>
+                <p id="playbackDetails">Some YouTube videos can only be viewed directly on YouTube.</p>
+                <div class="playback-actions">
+                  <a id="watchDirect" class="primary" target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/">Watch on YouTube ↗</a>
+                  <a id="findAlternate" class="secondary" target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/results?search_query=video">Find another upload</a>
+                </div>
+                <div class="playback-actions mini"><button type="button" id="retryBtn" class="text-btn">Retry playback</button><button type="button" id="dismissBtn" class="text-btn">Dismiss</button></div>
+              </div>
               <div id="localNotice" class="local-notice" hidden>
                 <div class="notice-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/></svg></div>
                 <h2>One quick step to enable playback</h2>
@@ -155,6 +183,7 @@
             </div>
             <div class="video-meta">
               <div class="meta-top"><div class="live-label"><span></span> Now playing</div><div class="button-strip">
+                <button id="helpBtn" class="help-button" type="button" title="Video not playing?" aria-label="Video not playing?">Video not playing?</button>
                 <button id="copyBtn" class="icon-button" title="Copy video URL" aria-label="Copy video URL"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button>
                 <a id="openCurrent" class="icon-button" href="https://www.youtube.com/watch?v=jNQXAC9IVRw" target="_blank" rel="noopener noreferrer" title="Watch on YouTube" aria-label="Watch video directly on YouTube"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M20 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5"/></svg></a>
               </div></div>
@@ -183,7 +212,7 @@
             <div class="queue-list" id="queueList" aria-live="polite"></div>
             <div class="queue-footer"><div class="queue-actions"><button id="nextBtn" class="text-btn">Next video →</button></div><button id="clearBtn" class="text-btn">Clear queue</button></div>
           </section>
-          <section class="tip-card"><div class="tip-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4M8 14a6 6 0 1 1 8 0c-.8.6-1 1.4-1 2H9c0-.6-.2-1.4-1-2Z"/></svg> A note about YouTube</div><p>This uses YouTube's official video embed. To avoid error 153, launch the page with <b>Start YouTube Lounge.bat</b> from the ZIP instead of opening the HTML directly. The launcher serves the page locally on your computer. Some creators disable embedding, so certain videos may still need to open on YouTube. Search opens YouTube in a new tab.</p></section>
+          <section class="tip-card"><div class="tip-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4M8 14a6 6 0 1 1 8 0c-.8.6-1 1.4-1 2H9c0-.6-.2-1.4-1-2Z"/></svg> A note about YouTube</div><p>This uses YouTube's official embedded player. If a video is unavailable here, use <b>Video not playing?</b> or <b>Watch on YouTube</b>. Videos blocked from embedding may work on YouTube itself; private, deleted and age-restricted videos cannot be unlocked by this page. Host the HTML on GitHub Pages to avoid local-file playback errors.</p></section>
         </aside>
       </div>
     </main>
@@ -212,6 +241,9 @@
       let currentId = readJSON(CURRENT, START.id);
       if (typeof currentId !== 'string' || !idPattern.test(currentId)) currentId = START.id;
       let toastTimer;
+      let ytPlayer = null;
+      let ytReady = false;
+      let lastPlaybackError = null;
 
       function readJSON(key, fallback) {try {const v=localStorage.getItem(key); return v === null ? fallback : JSON.parse(v)} catch {return fallback}}
       function save() {try {localStorage.setItem(STORE,JSON.stringify(queue));localStorage.setItem(CURRENT,JSON.stringify(currentId))}catch{}}
@@ -241,11 +273,56 @@
       }
       function videoUrl(id){return 'https://www.youtube.com/watch?v='+encodeURIComponent(id)}
       function videoTitle(id){return queue.find(v=>v.id===id)?.title || 'YouTube video · '+id}
+      function searchAlternateUrl(id){
+        const title=videoTitle(id);
+        const query=/^YouTube video ·|^YouTube video$/i.test(title)?id:title;
+        return 'https://www.youtube.com/results?search_query='+encodeURIComponent(query);
+      }
+      function showPlaybackHelp(code=null){
+        lastPlaybackError=code;
+        const messages={
+          2:['Invalid YouTube link','The link or video ID is not valid. Check the address and try again.'],
+          5:['This browser couldn’t play the video','YouTube reported a playback problem. Try again or open the video directly on YouTube.'],
+          100:['This video is private or removed','YouTube says the video wasn’t found, was removed, or is private. This player cannot restore access to it. You can search for an available upload.'],
+          101:['Embedding is disabled','The creator does not allow this video to play inside other websites. It may still play directly on YouTube.'],
+          150:['Embedding is disabled','The creator does not allow this video to play inside other websites. It may still play directly on YouTube.'],
+          153:['Player identification problem','YouTube did not receive the required website identity. Open this page from GitHub Pages or localhost rather than a downloaded HTML file.']
+        };
+        const [heading,detail]=messages[code] || ['Video unavailable in this player','Some videos cannot play in an embedded player, including age-restricted content. You can try YouTube directly or search for a different authorized upload.'];
+        $('playbackHeading').textContent=heading;
+        $('playbackDetails').textContent=detail;
+        $('playbackKicker').textContent=code===null?'Playback help':`YouTube error ${code}`;
+        $('watchDirect').href=videoUrl(currentId);
+        $('findAlternate').href=searchAlternateUrl(currentId);
+        $('playbackNotice').hidden=false;
+      }
+      function hidePlaybackHelp(){
+        $('playbackNotice').hidden=true;
+        lastPlaybackError=null;
+      }
+      function embedUrl(id,autoplay){
+        const params = new URLSearchParams({rel:'0',playsinline:'1',enablejsapi:'1'});
+        if (autoplay) params.set('autoplay','1');
+        // The actual GitHub Pages origin is supplied by the browser, never hardcoded.
+        if(location.protocol==='https:'||location.protocol==='http:') params.set('origin',location.origin);
+        return 'https://www.youtube.com/embed/'+encodeURIComponent(id)+'?'+params.toString();
+      }
       function play(id, autoplay=true){
         if(!idPattern.test(id))return;
         currentId=id;
+        hidePlaybackHelp();
         if (!isLocalFile) {
-          $('player').src='https://www.youtube.com/embed/'+encodeURIComponent(id)+'?rel=0&playsinline=1'+(autoplay?'&autoplay=1':'');
+          if(ytReady && ytPlayer){
+            try {
+              if(autoplay) ytPlayer.loadVideoById(id);
+              else ytPlayer.cueVideoById(id);
+            } catch (e){
+              ytReady=false;
+              $('player').src=embedUrl(id,autoplay);
+            }
+          } else {
+            $('player').src=embedUrl(id,autoplay);
+          }
         } else {
           $('openVideoFromNotice').href=videoUrl(id);
           $('localNotice').hidden=false;
@@ -254,6 +331,27 @@
         $('currentUrl').textContent='youtube.com/watch?v='+id;
         $('openCurrent').href=videoUrl(id);
         save();render();
+      }
+      function attachYouTubeErrorEvents(){
+        if(isLocalFile || !window.YT || !YT.Player) return;
+        try {
+          // Attach the official API to the existing iframe, preserving simple iframe playback.
+          ytPlayer = new YT.Player('player', {
+            events: {
+              onReady(){ytReady=true;},
+              onError(event){showPlaybackHelp(event.data);}
+            }
+          });
+        } catch (e) {ytPlayer=null;ytReady=false;}
+      }
+      window.onYouTubeIframeAPIReady=attachYouTubeErrorEvents;
+      function loadYouTubeAPI(){
+        if(isLocalFile)return;
+        const script=document.createElement('script');
+        script.src='https://www.youtube.com/iframe_api';
+        script.async=true;
+        script.referrerPolicy='strict-origin-when-cross-origin';
+        document.head.append(script);
       }
       function add(id){
         if(queue.some(v=>v.id===id))return false;
@@ -293,12 +391,15 @@
       $('linkInput').addEventListener('input',clearError);
       $('clearBtn').addEventListener('click',()=>{if(queue.length&&confirm('Clear all saved videos from your queue?')){queue=[];save();render();toast('Queue cleared')}});
       $('nextBtn').addEventListener('click',()=>{if(!queue.length)return;const at=queue.findIndex(v=>v.id===currentId);play(queue[(at+1)%queue.length].id)});
+      $('helpBtn').addEventListener('click',()=>showPlaybackHelp(lastPlaybackError));
+      $('dismissBtn').addEventListener('click',hidePlaybackHelp);
+      $('retryBtn').addEventListener('click',()=>{hidePlaybackHelp();if(ytReady&&ytPlayer){try{ytPlayer.loadVideoById(currentId);return}catch{}}$('player').src=embedUrl(currentId,true)});
       $('copyBtn').addEventListener('click',async()=>{
         const url=videoUrl(currentId);
         try{await navigator.clipboard.writeText(url);toast('Video link copied')}catch{window.prompt('Copy this video URL:',url)}
       });
       document.addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'){event.preventDefault();$('linkInput').focus();$('linkInput').select()}});
-      save();render();play(currentId,false);
+      save();render();play(currentId,false);loadYouTubeAPI();
     })();
   </script>
 </body>
